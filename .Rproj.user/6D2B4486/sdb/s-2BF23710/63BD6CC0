@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "library(tidyverse)\n\ncrime_coltypes <- cols(\n  year_id = 'c',\n  dr_no = 'c',\n  date_occ = col_date(format = '%Y-%m-%d'),\n  date_rptd = col_date(format = '%Y-%m-%d'),\n  area_name = 'c',\n  rd = 'c',\n  crm_cd_desc = 'c',\n  status_desc = 'c',\n  location = 'c',\n  cross_st = 'c',\n  lat = 'd',\n  long = 'd',\n  year = 'i',\n  month = 'i',\n  day_of_month = 'i',\n  hour_of_day = 'i',\n  day_of_week = 'c',\n  simple_bucket = 'c',\n  \n  time_occ = '_', area = '_', crm_cd = '_', status = '_',\n  intersection = '_'\n  \n)\n\ncrimes <- read_csv(\n  'raw_data/LAcrime2012-2016.zip',\n  col_types = crime_coltypes\n)\n\nwrite_rds(crimes, 'processed_data/crimes.rds')\n",
+    "created" : 1482816490083.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3500642651",
+    "id" : "63BD6CC0",
+    "lastKnownWriteTime" : 1482817254,
+    "last_content_update" : 1482817254171,
+    "path" : "~/Dropbox/LA_crime_data2.0/R/work1.R",
+    "project_path" : "R/work1.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

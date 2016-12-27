@@ -1,0 +1,102 @@
+---
+title: "Noontime Crimes"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+```{r global_options, include = F}
+knitr::opts_chunk$set(fig.width = 10, fig.height = 6,
+                      warning = F, message = F, fig.path = 'figs/')
+```
+
+```{r load_data_setup, message = F}
+library(tidyverse)
+library(scales)
+library(DT)
+library(forcats)
+library(ggthemes)
+
+crimes <- read_rds('../processed_data/crimes.rds')
+```
+
+# Overall Crimes by Time of Day
+```{r overal_time_of_day}
+crimes_by_day <- crimes %>%
+  group_by(year, hour_of_day) %>%
+  summarize(crime_count = n() / length(unique(date_occ)))
+crimes_by_day %>%
+  ggplot(aes(hour_of_day, crime_count)) + 
+  geom_line() + 
+  facet_grid(~ year ) + 
+  scale_y_continuous(limits = c(0, 75)) +
+  scale_x_continuous(breaks = c(0,12,23)) +
+  ggtitle('Crime Rates Would Appear to Peak around Noon') + 
+  ylab('Average Amount of Crimes per Day') + 
+  xlab('Hour of day: 12:00AM (0) - 11PM (23)') + 
+  theme_bw()
+```
+
+## What Crime Contribute to this Peak in Noon Crimes?
+Let's take a closer look and split by different types of crimes. To start, we'll break down all `r length(unique(crimes$crm_desc))` unique crime types with the following "crime buckets" (subjectively binned by Patrick and myself)
+
+```{r which_crimes}
+crimes_by_day <- crimes %>%
+  filter(!grepl('MISS', simple_bucket)) %>%
+  group_by(simple_bucket, hour_of_day) %>% 
+  summarize(crime_count = n() / length(unique(date_occ))) %>%
+  ungroup() %>%
+  mutate(simple_bucket = fct_reorder(simple_bucket, crime_count))
+crimes_by_day %>%
+  ggplot(aes(hour_of_day, crime_count, color = simple_bucket)) + 
+  geom_line() + 
+  facet_grid(simple_bucket ~ ., scales = 'free') +
+  ggtitle("FRAUD, SEXUAL, THEFT, and 'OTHER' Crimes Show Pronounced Peaks at Noon") + 
+  xlab('Hour of day: 12:00AM (0) - 11PM (23)') + 
+  ylab('Average Amount of Crimes per Day') +
+  theme_bw()
+```
+
+## Investigate these Crimes Further
+```{r}
+high_noon_crimes <- c("FRAUD","SEXUAL","THEFT","OTHER")
+day_of_week_check <- crimes %>%
+  filter(simple_bucket %in% high_noon_crimes) %>%
+  group_by(simple_bucket, day_of_week, hour_of_day) %>%
+  summarize(crime_count = n() / length(unique(date_occ))) %>%
+  ungroup() %>%
+  mutate(day_of_week = fct_relevel(day_of_week,
+    c('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+    'Friday', 'Saturday')
+  ))
+day_of_week_check %>%
+  ggplot(aes(hour_of_day, crime_count, color = simple_bucket)) + 
+  geom_line() + 
+  facet_grid(day_of_week ~ simple_bucket, scales = 'free') + 
+  theme_bw() + 
+  scale_y_continuous(limits = c(0, 35), breaks = c(10, 30)) +
+  ggtitle("Theft-Type Crimes Contribute the Most to Noon Peak",
+          subtitle = 'Noon is Probably Default time of Crime when Time of Crime Ocurring is Unknown') + 
+  xlab('Hour of day: 12:00AM (0) - 11PM (23)') + 
+  ylab('Average Amount of Crimes per Day')
+```
+
+## Is Theft Centered at only one Area?
+```{r theft_in_areas}
+theft_areas <- crimes %>%
+  filter(simple_bucket == 'THEFT') %>%
+  group_by(area_name, hour_of_day) %>%
+  summarize(crime_count = n() / length(unique(date_occ)))
+theft_areas %>%
+  ggplot(aes(hour_of_day, crime_count, color = area_name)) +
+  geom_line() + 
+  theme_bw() + 
+  scale_y_continuous(limits = c(0, 2.5)) +
+  facet_wrap(~ area_name) + 
+  theme(legend.position = 'none') + 
+  ggtitle('Default Noon Placeholder Appears to be Widespread') + 
+  xlab('Hour of day: 12:00AM (0) - 11PM (23)') + 
+  ylab('Average Amount of Crimes per Day')
+```
+
+## Why is This Important?

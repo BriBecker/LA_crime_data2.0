@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "---\ntitle: \"Noontime Crimes\"\noutput:\n  html_document: default\n  html_notebook: default\n---\n\n```{r global_options, include = F}\nknitr::opts_chunk$set(fig.width = 10, fig.height = 6,\n                      warning = F, message = F, fig.path = 'figs/')\n```\n\n```{r load_data_setup, message = F}\nlibrary(tidyverse)\nlibrary(scales)\nlibrary(DT)\nlibrary(forcats)\nlibrary(ggthemes)\n\ncrimes <- read_rds('../processed_data/crimes.rds')\n```\n\n# Overall Crimes by Time of Day\n```{r overal_time_of_day}\ncrimes_by_day <- crimes %>%\n  group_by(year, hour_of_day) %>%\n  summarize(crime_count = n() / length(unique(date_occ)))\ncrimes_by_day %>%\n  ggplot(aes(hour_of_day, crime_count)) + \n  geom_line() + \n  facet_grid(~ year ) + \n  scale_y_continuous(limits = c(0, 75)) +\n  scale_x_continuous(breaks = c(0,12,23)) +\n  ggtitle('Crime Rates Would Appear to Peak around Noon') + \n  ylab('Average Amount of Crimes per Day') + \n  xlab('Hour of day: 12:00AM (0) - 11PM (23)') + \n  theme_bw()\n```\n\n## What Crime Contribute to this Peak in Noon Crimes?\nLet's take a closer look and split by different types of crimes. To start, we'll break down all `r length(unique(crimes$crm_desc))` unique crime types with the following \"crime buckets\" (subjectively binned by Patrick and myself)\n\n```{r which_crimes}\ncrimes_by_day <- crimes %>%\n  filter(!grepl('MISS', simple_bucket)) %>%\n  group_by(simple_bucket, hour_of_day) %>% \n  summarize(crime_count = n() / length(unique(date_occ))) %>%\n  ungroup() %>%\n  mutate(simple_bucket = fct_reorder(simple_bucket, crime_count))\ncrimes_by_day %>%\n  ggplot(aes(hour_of_day, crime_count, color = simple_bucket)) + \n  geom_line() + \n  facet_grid(simple_bucket ~ ., scales = 'free') +\n  ggtitle(\"FRAUD, SEXUAL, THEFT, and 'OTHER' Crimes Show Pronounced Peaks at Noon\") + \n  xlab('Hour of day: 12:00AM (0) - 11PM (23)') + \n  ylab('Average Amount of Crimes per Day') +\n  theme_bw()\n```\n\n## Investigate these Crimes Further\n```{r}\nhigh_noon_crimes <- c(\"FRAUD\",\"SEXUAL\",\"THEFT\",\"OTHER\")\nday_of_week_check <- crimes %>%\n  filter(simple_bucket %in% high_noon_crimes) %>%\n  group_by(simple_bucket, day_of_week, hour_of_day) %>%\n  summarize(crime_count = n() / length(unique(date_occ))) %>%\n  ungroup() %>%\n  mutate(day_of_week = fct_relevel(day_of_week,\n    c('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',\n    'Friday', 'Saturday')\n  ))\nday_of_week_check %>%\n  ggplot(aes(hour_of_day, crime_count, color = simple_bucket)) + \n  geom_line() + \n  facet_grid(day_of_week ~ simple_bucket, scales = 'free') + \n  theme_bw() + \n  scale_y_continuous(limits = c(0, 35), breaks = c(10, 30)) +\n  ggtitle(\"Theft-Type Crimes Contribute the Most to Noon Peak\",\n          subtitle = 'Noon is Probably Default time of Crime when Time of Crime Ocurring is Unknown') + \n  xlab('Hour of day: 12:00AM (0) - 11PM (23)') + \n  ylab('Average Amount of Crimes per Day')\n```\n\n## Is Theft Centered at only one Area?\n```{r theft_in_areas}\ntheft_areas <- crimes %>%\n  filter(simple_bucket == 'THEFT') %>%\n  group_by(area_name, hour_of_day) %>%\n  summarize(crime_count = n() / length(unique(date_occ)))\ntheft_areas %>%\n  ggplot(aes(hour_of_day, crime_count, color = area_name)) +\n  geom_line() + \n  theme_bw() + \n  scale_y_continuous(limits = c(0, 2.5)) +\n  facet_wrap(~ area_name) + \n  theme(legend.position = 'none') + \n  ggtitle('Default Noon Placeholder Appears to be Widespread') + \n  xlab('Hour of day: 12:00AM (0) - 11PM (23)') + \n  ylab('Average Amount of Crimes per Day')\n```\n\n## Why is This Important?",
+    "created" : 1482817258279.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3668986453",
+    "id" : "C423D138",
+    "lastKnownWriteTime" : 1482823266,
+    "last_content_update" : 1482823266538,
+    "path" : "~/Dropbox/LA_crime_data2.0/notebooks/noontime_crimes.Rmd",
+    "project_path" : "notebooks/noontime_crimes.Rmd",
+    "properties" : {
+        "chunk_output_type" : "inline",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

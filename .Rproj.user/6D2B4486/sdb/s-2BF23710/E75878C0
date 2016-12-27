@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1482822763737.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "E75878C0",
+    "lastKnownWriteTime" : 4670330670118076424,
+    "last_content_update" : 1482822763737,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "5DCA8DF1",
+        "caption" : "theft_areas",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=theft_areas&cache_key=5DCA8DF1",
+        "displayedObservations" : 525,
+        "environment" : "",
+        "object" : "theft_areas",
+        "preview" : 0,
+        "totalObservations" : 525,
+        "variables" : 3
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
